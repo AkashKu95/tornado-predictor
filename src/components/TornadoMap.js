@@ -209,6 +209,8 @@ export default function TornadoMap({ data, day, centerLocation, selectedAlert })
         maxZoom={18}
         style={{ width: '100%', height: '100%' }}
         zoomControl={false}
+        tap={false}
+        touchZoom={true}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"

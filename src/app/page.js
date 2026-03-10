@@ -261,7 +261,7 @@ export default function Home() {
         <div className="overlay-ui absolute bottom-[130px] md:bottom-auto md:top-6 left-1/2 -translate-x-1/2 z-[600] w-[95vw] md:w-auto opacity-95 md:opacity-100">
           <div className="glass-panel" style={{
             display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between',
-            padding: '4px 8px', gap: '6px', width: '100%',
+            padding: '2px 6px', gap: '4px', width: '100%',
             background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(52, 211, 153, 0.3)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', borderRadius: '16px',
             overflow: 'hidden'
@@ -332,8 +332,8 @@ export default function Home() {
       {/* Overlay UI - Header & Location */}
       <div className="overlay-ui absolute top-2 md:top-6 left-2 md:left-6 right-2 md:right-6 flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div className="glass-panel" style={{ padding: '8px 12px' }}>
-            <h1 style={{ fontSize: 'clamp(1rem, 5vw, 2.25rem)', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>Tornado Predictor</h1>
+          <div className="glass-panel" style={{ padding: '8px 12px', background: 'rgba(15, 23, 42, 0.85)' }}>
+            <h1 style={{ fontSize: 'clamp(1rem, 5vw, 2.25rem)', fontWeight: 800, margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tornado Predictor</h1>
             <p className="hidden sm:block" style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '4px', margin: 0 }}>NOAA SPC 3-Day Severe Weather Outlook</p>
           </div>
           <LocationControls onLocationSelect={setCenterLocation} />
@@ -383,22 +383,23 @@ export default function Home() {
         </div>
 
         {/* Reset Button and Loading Indicator */}
-        <div className="hidden md:flex flex-col gap-4 items-end pointer-events-auto">
+        <div className="absolute top-0 right-0 md:static flex flex-col gap-2 md:gap-4 items-end pointer-events-auto z-[900]">
           <button
             onClick={() => window.location.reload()}
             className="btn glass-panel"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '10px 16px',
+              gap: '6px',
+              padding: '8px 12px',
               background: 'rgba(52, 211, 153, 0.2)',
               border: '1px solid rgba(52, 211, 153, 0.4)',
               color: '#34d399',
-              fontWeight: 600
+              fontWeight: 600,
+              fontSize: '0.9rem'
             }}
           >
-            <RefreshCw size={18} /> Reset App
+            <RefreshCw size={16} /> <span className="hidden sm:inline">Reset App</span>
           </button>
 
           <div className="glass-panel" style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', opacity: isLoading ? 1 : 0, transition: 'opacity 0.3s ease', pointerEvents: 'none' }}>
