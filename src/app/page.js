@@ -330,8 +330,8 @@ export default function Home() {
       )}
 
       {/* Overlay UI - Header & Location */}
-      <div className="overlay-ui absolute top-2 md:top-6 left-2 md:left-6 right-2 md:right-6 flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div className="overlay-ui absolute top-2 md:top-6 left-2 md:left-6 right-2 md:right-6 flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4 z-[1000] pointer-events-none">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' }}>
           <div className="glass-panel" style={{ padding: '8px 12px', background: 'rgba(15, 23, 42, 0.85)' }}>
             <h1 style={{ fontSize: 'clamp(1rem, 5vw, 2.25rem)', fontWeight: 800, margin: 0, lineHeight: 1.2, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Tornado Predictor</h1>
             <p className="hidden sm:block" style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '4px', margin: 0 }}>NOAA SPC 3-Day Severe Weather Outlook</p>
@@ -383,7 +383,7 @@ export default function Home() {
         </div>
 
         {/* Reset Button and Loading Indicator */}
-        <div className="absolute top-0 right-0 md:static flex flex-col gap-2 md:gap-4 items-end pointer-events-auto z-[900]">
+        <div className="absolute top-0 right-0 md:static flex flex-col gap-2 md:gap-4 items-end z-[900]" style={{ pointerEvents: 'none' }}>
           <button
             onClick={() => window.location.reload()}
             className="btn glass-panel"
@@ -396,7 +396,8 @@ export default function Home() {
               border: '1px solid rgba(52, 211, 153, 0.4)',
               color: '#34d399',
               fontWeight: 600,
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
+              pointerEvents: 'auto'
             }}
           >
             <RefreshCw size={16} /> <span className="hidden sm:inline">Reset App</span>
