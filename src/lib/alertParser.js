@@ -40,26 +40,28 @@ export function parseNwsAlert(description, instruction) {
     }
 
     // 4. Extract Affected Places
-    // NWS format: "LOCATIONS IMPACTED INCLUDE...\nDallas, Fort Worth, Arlington..."
-    const locationsIdx = fullText.indexOf("LOCATIONS IMPACTED INCLUDE...");
-    if (locationsIdx !== -1) {
-        // Get everything after this header, up until the next blank line or significant section break
-        let locText = fullText.substring(locationsIdx + 29);
-
-        // Stop at common NWS section breaks
-        const endLocIdx = locText.search(/\n\n|PRECAUTIONARY\/PREPAREDNESS ACTIONS|&&|\* /);
-        if (endLocIdx !== -1) {
-            locText = locText.substring(0, endLocIdx);
+    // NWS format: "* LOCATIONS IMPACTED INCLUDE...\n  Dallas, Fort Worth, Arlington..."
+    let locationsMatch = fullText.match(/LOCATIONS IMPACTED INCLUDE\.\.\.([\s\S]*?)(?:\n\n|PRECAUTIONARY\/PREPAREDNESS ACTIONS|\* |&&|THIS INCLUDES)/i);
+    
+    // Fallback if the strict regex boundary fails
+    if (!locationsMatch && fullText.toUpperCase().includes("LOCATIONS IMPACTED INCLUDE...")) {
+        // Use case-insensitive split
+        const parts = fullText.split(/LOCATIONS IMPACTED INCLUDE\.\.\./i);
+        if (parts.length > 1) {
+             let after = parts[1];
+             let cleaned = after.split(/\n\n|PRECAUTIONARY|&&/i)[0];
+             locationsMatch = [null, cleaned];
         }
+    }
 
-        // Clean up
-        locText = locText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-
-        // Sometimes NWS puts "This includes..." we want to trim that out for the list
-        locText = locText.split('This includes')[0].trim();
+    if (locationsMatch && locationsMatch[1]) {
+        let locText = locationsMatch[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+        
+        // Remove trailing period if present before splitting
+        locText = locText.replace(/\.$/, '');
 
         // Split by commas or "and"
-        const places = locText.split(/,| and /).map(p => p.trim()).filter(p => p && p.length > 2 && p.toLowerCase() !== 'including');
+        const places = locText.split(/,| and /i).map(p => p.trim()).filter(p => p && p.length > 2 && p.toLowerCase() !== 'including');
         summary.affectedPlaces = places;
     }
 

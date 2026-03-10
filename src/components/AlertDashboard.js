@@ -135,6 +135,7 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
                 const alertId = props.id || idx;
                 const isExpanded = expandedId === alertId;
                 const isExpired = activeTab === 'history' && new Date(props.expires) < new Date();
+                const summary = parseNwsAlert(props.description, props.instruction);
 
                 return (
                   <div
@@ -174,15 +175,28 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
                       Expires: {new Date(props.expires).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
 
+                    {/* Always show affected locations for quick scanning if available */}
+                    {summary.affectedPlaces.length > 0 && (
+                      <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'flex-start' }} onClick={(e) => e.stopPropagation()}>
+                        <Users size={14} color="#c084fc" style={{ marginTop: '2px', flexShrink: 0 }} />
+                        <div style={{ margin: 0, fontSize: '0.8rem', color: '#f8fafc', lineHeight: '1.4' }}>
+                          <span style={{ color: '#94a3b8', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Affected Locations:</span>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {summary.affectedPlaces.map((place, i) => (
+                              <span key={i} style={{ display: 'inline-block', background: 'rgba(192, 132, 252, 0.15)', border: '1px solid rgba(192, 132, 252, 0.3)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.75rem', color: '#f3e8ff' }}>
+                                {place}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {isExpanded && (
-                      <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
 
                         {/* Deterministic / AI-style Summary Section */}
-                        {(() => {
-                          const summary = parseNwsAlert(props.description, props.instruction);
-
-                          return (
-                            <div style={{ padding: '12px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '6px' }}>
+                        <div style={{ padding: '12px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(148, 163, 184, 0.2)', borderRadius: '6px' }}>
                               <h5 style={{ margin: '0 0 10px', fontSize: '0.85rem', color: '#e2e8f0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
                                 Quick Impact Summary
                               </h5>
@@ -214,26 +228,8 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
                                   </div>
                                 )}
 
-                                {summary.affectedPlaces.length > 0 && (
-                                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
-                                    <Users size={14} color="#c084fc" style={{ marginTop: '2px', flexShrink: 0 }} />
-                                    <div style={{ margin: 0, fontSize: '0.8rem', color: '#f8fafc', lineHeight: '1.4' }}>
-                                      <span style={{ color: '#94a3b8', fontWeight: 500, display: 'block', marginBottom: '4px' }}>Affected Locations:</span>
-                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                        {summary.affectedPlaces.map((place, i) => (
-                                          <span key={i} style={{ display: 'inline-block', background: 'rgba(192, 132, 252, 0.15)', border: '1px solid rgba(192, 132, 252, 0.3)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.75rem', color: '#f3e8ff' }}>
-                                            {place}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-
                               </div>
                             </div>
-                          );
-                        })()}
 
                         {/* Raw Text Below */}
                         {props.instruction && (

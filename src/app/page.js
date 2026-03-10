@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { RefreshCw, Tornado } from 'lucide-react';
+import { RefreshCw, Tornado, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchTornadoData, fetchLocalWeather, fetchDetailedForecast } from '@/lib/noaaApi';
 import * as turf from '@turf/turf';
 import LocationControls from '@/components/LocationControls';
@@ -32,6 +32,7 @@ export default function Home() {
   const [localForecast, setLocalForecast] = useState([]);
   const [isForecastLoading, setIsForecastLoading] = useState(false);
   const [isDiscussionCollapsed, setIsDiscussionCollapsed] = useState(false);
+  const [isForecastCollapsed, setIsForecastCollapsed] = useState(false);
 
   // Collapse discussion by default on mobile
   useEffect(() => {
@@ -409,34 +410,42 @@ export default function Home() {
           </div>
 
           {/* Forecast Discussion Panel - Desktop Right Side */}
-          <div className="glass-panel hidden md:flex" style={{
-            width: '350px',
-            height: 'calc(100vh - 280px)',
+          <div className="glass-panel hidden md:flex transition-all duration-300 ease-in-out" style={{
+            width: isForecastCollapsed ? 'auto' : '350px',
+            height: isForecastCollapsed ? 'auto' : 'calc(100vh - 280px)',
             flexDirection: 'column',
             pointerEvents: 'auto',
             overflow: 'hidden',
             borderRight: '1px solid rgba(147, 197, 253, 0.2)',
             borderLeft: '4px solid rgba(56, 189, 248, 0.6)'
           }}>
-            <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.6)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <h2 style={{ fontSize: '1.05rem', margin: 0, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div 
+              style={{ padding: isForecastCollapsed ? '10px 16px' : '16px 20px', background: 'rgba(15, 23, 42, 0.6)', borderBottom: isForecastCollapsed ? 'transparent' : '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              onClick={() => setIsForecastCollapsed(!isForecastCollapsed)}
+            >
+              <h2 style={{ fontSize: isForecastCollapsed ? '0.9rem' : '1.05rem', margin: 0, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#38bdf8' }}></span>
                 Day {selectedDay} Local Forecast
               </h2>
+              <div style={{ color: '#94a3b8' }}>
+                {isForecastCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={20} />}
+              </div>
             </div>
 
-            <div style={{
-              flex: 1,
-              padding: '20px',
-              overflowY: 'auto',
-              fontSize: '0.85rem',
-              color: '#cbd5e1',
-              fontFamily: 'monospace',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap'
-            }}>
-              {renderForecastContent(isForecastLoading, localForecast, selectedDay)}
-            </div>
+            {!isForecastCollapsed && (
+              <div style={{
+                flex: 1,
+                padding: '20px',
+                overflowY: 'auto',
+                fontSize: '0.85rem',
+                color: '#cbd5e1',
+                fontFamily: 'monospace',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap'
+              }}>
+                {renderForecastContent(isForecastLoading, localForecast, selectedDay)}
+              </div>
+            )}
           </div>
 
         </div>

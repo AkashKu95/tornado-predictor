@@ -302,7 +302,7 @@ export default function TornadoMap({ data, day, centerLocation, selectedAlert, a
           const isWarning = alert.properties.event === 'Tornado Warning';
           const isSelected = selectedAlert && selectedAlert.properties.id === alert.properties.id;
           
-          let alertColor = isWarning ? '#ef4444' : '#ffee00'; // red for warning, brighter yellow for watch
+          let alertColor = isWarning ? '#ef4444' : '#c084fc'; // red for warning, bright purple for watch
           
           return (
             <GeoJSON
