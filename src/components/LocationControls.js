@@ -74,8 +74,20 @@ export default function LocationControls({ onLocationSelect }) {
 
     setIsSearching(true);
     try {
+      // Check if the query is a 5-digit US ZIP Code
+      const isZipCode = /^\d{5}$/.test(searchQuery.trim());
+
+      let queryUrl = '';
+      if (isZipCode) {
+        // Enforce strict US postal code search to prevent matching random 5-digit street addresses globally
+        queryUrl = `https://nominatim.openstreetmap.org/search?format=json&postalcode=${searchQuery.trim()}&countrycodes=us&limit=1`;
+      } else {
+        // Standard city/state text search
+        queryUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`;
+      }
+
       // Use OpenStreetMap Nominatim for free geocoding
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`, {
+      const res = await fetch(queryUrl, {
         headers: {
           'Accept-Language': 'en'
         }
@@ -83,10 +95,21 @@ export default function LocationControls({ onLocationSelect }) {
       const data = await res.json();
 
       if (data && data.length > 0) {
+        // Nominatim's display_name format varies. For ZIP codes, it often starts with the ZIP itself.
+        // We want to find the first comma-separated segment that actually looks like a city name (contains letters).
+        const nameParts = data[0].display_name.split(',');
+        let bestName = nameParts[0].trim();
+
+        if (isZipCode && /^\d/.test(bestName)) {
+          // If the first part is just numbers (the ZIP), try to find the next part that contains letters
+          const alphaPart = nameParts.find(part => /[a-zA-Z]/.test(part));
+          if (alphaPart) bestName = alphaPart.trim();
+        }
+
         onLocationSelect({
           lat: parseFloat(data[0].lat),
           lon: parseFloat(data[0].lon),
-          name: data[0].display_name.split(',')[0], // Get just the city/primary name
+          name: bestName,
           zoom: 8
         });
         setSearchQuery('');
@@ -118,7 +141,7 @@ export default function LocationControls({ onLocationSelect }) {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search city, state..."
+          placeholder="City, State, or ZIP..."
           className="w-[140px] md:w-[200px]"
           style={{
             background: 'rgba(0,0,0,0.2)',
