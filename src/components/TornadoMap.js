@@ -77,7 +77,7 @@ function AlertView({ alert }) {
   return null;
 }
 
-export default function TornadoMap({ data, day, centerLocation, selectedAlert }) {
+export default function TornadoMap({ data, day, centerLocation, selectedAlert, activeAlerts }) {
   const [radarData, setRadarData] = useState(null);
   const [frameIndex, setFrameIndex] = useState(0);
 
@@ -227,6 +227,9 @@ export default function TornadoMap({ data, day, centerLocation, selectedAlert })
           />
         </Pane>
 
+        {/* Custom pane for Active NWS Alerts to ensure they render ON TOP of base NOAA polygons */}
+        <Pane name="alertsPane" style={{ zIndex: 390 }} />
+
         {/* Only auto-fly to storm polygons if we haven't manually searched a location */}
         {!centerLocation && data && <ChangeView geojsonData={data} />}
 
@@ -293,20 +296,38 @@ export default function TornadoMap({ data, day, centerLocation, selectedAlert })
         {/* Fly to active NWS Alert */}
         {selectedAlert && <AlertView alert={selectedAlert} />}
 
-        {/* Draw the NWS warning polygon if one is selected */}
-        {selectedAlert && selectedAlert.geometry && (
-          <GeoJSON
-            key={`alert-${selectedAlert.properties.id}`}
-            data={selectedAlert}
-            style={{
-              color: '#ef4444',
-              weight: 3,
-              fillColor: '#ef4444',
-              fillOpacity: 0.2,
-              dashArray: '5, 5'
-            }}
-          />
-        )}
+        {/* Draw all active NWS warning and watch polygons on their own pane ONLY for Day 1 */}
+        {day === 1 && activeAlerts && activeAlerts.length > 0 && activeAlerts.map(alert => {
+          if (!alert.geometry) return null;
+          const isWarning = alert.properties.event === 'Tornado Warning';
+          const isSelected = selectedAlert && selectedAlert.properties.id === alert.properties.id;
+          
+          let alertColor = isWarning ? '#ef4444' : '#ffee00'; // red for warning, brighter yellow for watch
+          
+          return (
+            <GeoJSON
+              key={`active-alert-poly-${alert.properties.id}`}
+              data={alert}
+              style={{
+                color: alertColor,
+                weight: isSelected ? 5 : 2,
+                fillColor: alertColor,
+                fillOpacity: isSelected ? 0.45 : 0.15,
+                dashArray: isWarning ? '5, 5' : null
+              }}
+              pane="alertsPane"
+              onEachFeature={(feature, layer) => {
+                const popupContent = `
+                  <div style="font-family: inherit; color: #333;">
+                    <strong style="font-size: 1.1em; color: ${alertColor};">${alert.properties.event}</strong><br/>
+                    <span style="font-size: 0.9em;">${alert.properties.areaDesc}</span>
+                  </div>
+                `;
+                layer.bindPopup(popupContent);
+              }}
+            />
+          );
+        })}
 
         {/* Animated Radar Layers - Render all to cache them, but only show the active frame index */}
         {selectedAlert && radarData && radarData.frames.map((frame, index) => (

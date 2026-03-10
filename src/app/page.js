@@ -24,6 +24,7 @@ export default function Home() {
   const [geoData, setGeoData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [centerLocation, setCenterLocation] = useState(null);
+  const [activeAlerts, setActiveAlerts] = useState([]);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [currentWeather, setCurrentWeather] = useState(null);
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
@@ -254,7 +255,7 @@ export default function Home() {
   return (
     <main className="main-layout">
       {/* Background Map layer */}
-      <TornadoMap data={geoData} day={selectedDay} centerLocation={centerLocation} selectedAlert={selectedAlert} />
+      <TornadoMap data={geoData} day={selectedDay} centerLocation={centerLocation} selectedAlert={selectedAlert} activeAlerts={activeAlerts} />
 
       {/* Overlay UI - Top Weather Banner */}
       {centerLocation && (
@@ -339,7 +340,7 @@ export default function Home() {
           <LocationControls onLocationSelect={setCenterLocation} />
 
           <div style={{ marginTop: '16px', pointerEvents: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <AlertDashboard onAlertSelect={setSelectedAlert} />
+            <AlertDashboard onAlertSelect={setSelectedAlert} onAlertsLoaded={setActiveAlerts} />
 
             {/* Forecast Discussion Panel - Mobile Positioned Here */}
             <div className={`glass-panel flex md:hidden transition-all duration-300 ease-in-out ${isDiscussionCollapsed ? 'w-fit' : 'w-[calc(100vw-48px)]'} max-h-[40vh]`} style={{

@@ -3,7 +3,7 @@ import { AlertTriangle, Info, ChevronDown, ChevronUp, Clock, Zap, MapPin, Eye, U
 import { fetchActiveWarnings, fetchTodayWarningsHistory } from '@/lib/noaaApi';
 import { parseNwsAlert } from '@/lib/alertParser';
 
-export default function AlertDashboard({ onAlertSelect }) {
+export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
   const [alerts, setAlerts] = useState([]);
   const [historyAlerts, setHistoryAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +25,7 @@ export default function AlertDashboard({ onAlertSelect }) {
       setIsLoading(true);
       const data = await fetchActiveWarnings();
       setAlerts(data);
+      if (onAlertsLoaded) onAlertsLoaded(data);
       setIsLoading(false);
 
       // Auto-select the first Tornado Warning on initial load
