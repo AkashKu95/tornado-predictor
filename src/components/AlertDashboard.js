@@ -81,7 +81,7 @@ export default function AlertDashboard({ onAlertSelect }) {
       >
         <h2 style={{ fontSize: isCollapsed ? '0.9rem' : '1rem', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <AlertTriangle size={isCollapsed ? 16 : 18} color="#ef4444" />
-          <span className={isCollapsed ? "hidden sm:inline" : ""}>NWS Alerts</span>
+          <span>NWS Alerts</span>
           {isCollapsed && alerts.length > 0 && <span style={{ background: '#ef4444', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold' }}>{alerts.length}</span>}
         </h2>
         <div style={{ color: '#94a3b8' }}>
