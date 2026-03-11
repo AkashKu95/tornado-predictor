@@ -33,6 +33,11 @@ export default function Home() {
   const [isForecastLoading, setIsForecastLoading] = useState(false);
   const [isDiscussionCollapsed, setIsDiscussionCollapsed] = useState(false);
   const [isForecastCollapsed, setIsForecastCollapsed] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Collapse discussion by default on mobile
   useEffect(() => {
@@ -458,16 +463,19 @@ export default function Home() {
             Forecast
           </div>
           {[1, 2, 3].map(day => {
-            // Calculate the actual date for the forecast day (Day 1 is today)
-            const forecastDate = new Date();
-            forecastDate.setDate(forecastDate.getDate() + (day - 1));
+            let dateString = '';
+            if (isClient) {
+              // Calculate the actual date for the forecast day (Day 1 is today)
+              const forecastDate = new Date();
+              forecastDate.setDate(forecastDate.getDate() + (day - 1));
 
-            // Format to "Mon, Mar 10"
-            const dateString = forecastDate.toLocaleDateString('en-US', {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric'
-            });
+              // Format to "Mon, Mar 10"
+              dateString = forecastDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
 
             return (
               <button
@@ -479,7 +487,7 @@ export default function Home() {
                 <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>
                   {day === 1 ? 'Today' : `Day ${day}`}
                 </span>
-                <span suppressHydrationWarning style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px', minHeight: '18px' }}>
                   {dateString}
                 </span>
               </button>
