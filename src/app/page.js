@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { RefreshCw, Tornado, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchTornadoData, fetchLocalWeather, fetchDetailedForecast } from '@/lib/noaaApi';
@@ -258,10 +258,22 @@ export default function Home() {
     );
   };
 
+  const mapComponent = React.useMemo(() => {
+    return (
+      <TornadoMap 
+        data={geoData} 
+        day={selectedDay} 
+        centerLocation={centerLocation} 
+        selectedAlert={selectedAlert} 
+        activeAlerts={activeAlerts} 
+      />
+    );
+  }, [geoData, selectedDay, centerLocation, selectedAlert, activeAlerts]);
+
   return (
     <main className="main-layout">
       {/* Background Map layer */}
-      <TornadoMap data={geoData} day={selectedDay} centerLocation={centerLocation} selectedAlert={selectedAlert} activeAlerts={activeAlerts} />
+      {mapComponent}
 
       {/* Overlay UI - Top Weather Banner */}
       {centerLocation && (

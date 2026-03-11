@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -77,7 +77,7 @@ function AlertView({ alert }) {
   return null;
 }
 
-export default function TornadoMap({ data, day, centerLocation, selectedAlert, activeAlerts }) {
+const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) => {
   const [radarData, setRadarData] = useState(null);
   const [frameIndex, setFrameIndex] = useState(0);
 
@@ -345,4 +345,6 @@ export default function TornadoMap({ data, day, centerLocation, selectedAlert, a
 
     </div>
   );
-}
+};
+
+export default React.memo(TornadoMap);
