@@ -40,29 +40,54 @@ export function parseNwsAlert(description, instruction) {
     }
 
     // 4. Extract Affected Places
-    // NWS format: "* LOCATIONS IMPACTED INCLUDE...\n  Dallas, Fort Worth, Arlington..."
-    let locationsMatch = fullText.match(/LOCATIONS IMPACTED INCLUDE\.\.\.([\s\S]*?)(?:\n\n|PRECAUTIONARY\/PREPAREDNESS ACTIONS|\* |&&|THIS INCLUDES)/i);
+    // Need to handle various formats of NWS warnings, especially how they terminate the locations block
     
-    // Fallback if the strict regex boundary fails
-    if (!locationsMatch && fullText.toUpperCase().includes("LOCATIONS IMPACTED INCLUDE...")) {
-        // Use case-insensitive split
-        const parts = fullText.split(/LOCATIONS IMPACTED INCLUDE\.\.\./i);
-        if (parts.length > 1) {
-             let after = parts[1];
-             let cleaned = after.split(/\n\n|PRECAUTIONARY|&&/i)[0];
-             locationsMatch = [null, cleaned];
-        }
-    }
-
-    if (locationsMatch && locationsMatch[1]) {
-        let locText = locationsMatch[1].replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    // Most common: "* LOCATIONS IMPACTED INCLUDE...\n  Dallas, Fort Worth, Arlington..."
+    // Sometimes ends with: "PRECAUTIONARY/PREPAREDNESS ACTIONS...", "&&", "$$", or just a new section like "TIME...MOT...LOC"
+    
+    // Step 1: Find where the locations section starts
+    const startRegex = /LOCATIONS\s+IMPACTED\s+INCLUDE(?:\.\.\.|\:)/i;
+    const matchStart = fullText.match(startRegex);
+    
+    if (matchStart) {
+        // Get everything after the start phrase
+        let afterText = fullText.substring(matchStart.index + matchStart[0].length);
         
-        // Remove trailing period if present before splitting
-        locText = locText.replace(/\.$/, '');
+        // Expanded the regex to catch all capitals action phrases that aren't places
+        const endRegex = /\n\n|\n\s*\*|\n\s*[A-Z]{3,}\.\.\.|PRECAUTIONARY\/PREPAREDNESS ACTIONS|&&|\$\$|TIME\.\.\.MOT\.\.\.LOC|THIS INCLUDES|TAKE COVER NOW\!/i;
+        const matchEnd = afterText.match(endRegex);
+        
+        let locationsBlock = matchEnd ? afterText.substring(0, matchEnd.index) : afterText;
+        
+        // Step 3: Clean up the text
+        locationsBlock = locationsBlock
+            .replace(/\n *\*/g, ',')           // Replace bullets with commas
+            .replace(/\n/g, ' ')               // Collapse newlines
+            .replace(/\s+/g, ' ')              // Collapse multiple spaces
+            .replace(/\b(?:This includes|Including|And)\b/gi, ',') // Remove joining words
+            .trim();
+        
+        // First split by sentence enders like period, exclamation, so we don't bleed into paragraphs.
+        let firstSentence = locationsBlock.split(/[\.\!\?]/)[0] + '.';
 
-        // Split by commas or "and"
-        const places = locText.split(/,| and /i).map(p => p.trim()).filter(p => p && p.length > 2 && p.toLowerCase() !== 'including');
-        summary.affectedPlaces = places;
+        // Strip the trailing period
+        firstSentence = firstSentence.replace(/\.$/, '').trim();
+        
+        // Step 4: Split into individual places
+        let places = firstSentence.split(/,|;| and /i)
+            .map(p => p.trim())
+            .filter(p => {
+                // Keep only valid-looking names
+                return p.length > 2 && 
+                       !/^[\d\W]+$/.test(p) && 
+                       p.toLowerCase() !== 'locations impacted include';
+            });
+            
+        // Clean up trailing punctuation on individual places
+        places = places.map(p => p.replace(/[\.\:]+$/, '').trim());
+
+        // Deduplicate
+        summary.affectedPlaces = [...new Set(places)];
     }
 
     return summary;
