@@ -470,8 +470,8 @@ export default function Home() {
 
       {/* Overlay UI - Timeline Scrubber */}
       <div className="overlay-ui absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 w-[95vw] md:w-auto">
-        <div className="glass-panel overflow-x-auto" style={{ padding: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <div style={{ padding: '0 16px', color: '#94a3b8', fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div className="glass-panel overflow-x-auto flex gap-1 md:gap-2 items-center p-1 md:p-2">
+          <div className="px-2 md:px-4 text-[0.7rem] md:text-[0.9rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
             Forecast
           </div>
           {[1, 2, 3].map(day => {
@@ -494,12 +494,12 @@ export default function Home() {
                 key={day}
                 onClick={() => setSelectedDay(day)}
                 className={`btn ${day === selectedDay ? 'active' : ''}`}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '6px 12px', minWidth: '95px' }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4px 8px', minWidth: '70px', minHeight: '44px', justifyContent: 'center' }}
               >
-                <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>
+                <span className="text-[0.95rem] md:text-[1.1rem]" style={{ fontWeight: 600, lineHeight: 1.2 }}>
                   {day === 1 ? 'Today' : `Day ${day}`}
                 </span>
-                <span style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.5px', minHeight: '18px' }}>
+                <span className="text-[0.65rem] md:text-[0.75rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   {dateString}
                 </span>
               </button>
