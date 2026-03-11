@@ -362,7 +362,7 @@ export default function Home() {
             <AlertDashboard onAlertSelect={setSelectedAlert} onAlertsLoaded={setActiveAlerts} onExpand={setAlertsExpanded} />
 
             {/* Forecast Discussion Panel - Mobile Positioned Here */}
-            <div className={`glass-panel transition-all duration-300 ease-in-out ${isDiscussionCollapsed ? 'w-fit' : 'w-[calc(100vw-48px)]'} max-h-[40vh] ${alertsExpanded ? 'hidden' : 'flex md:hidden'}`} style={{
+            <div className={`glass-panel transition-all duration-300 ease-in-out ${isDiscussionCollapsed ? 'w-fit' : 'w-[calc(100vw-48px)]'} max-h-[40vh] ${!isClient ? 'hidden md:hidden' : (alertsExpanded ? 'hidden' : 'flex md:hidden')}`} style={{
               flexDirection: 'column',
               pointerEvents: 'auto',
               overflow: 'hidden',
