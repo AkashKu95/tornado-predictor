@@ -3,7 +3,7 @@ import { AlertTriangle, Info, ChevronDown, ChevronUp, Clock, Zap, MapPin, Eye, U
 import { fetchActiveWarnings, fetchTodayWarningsHistory } from '@/lib/noaaApi';
 import { parseNwsAlert } from '@/lib/alertParser';
 
-export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
+export default function AlertDashboard({ onAlertSelect, onAlertsLoaded, onExpand }) {
   const [alerts, setAlerts] = useState([]);
   const [historyAlerts, setHistoryAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,9 +16,18 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
   // Collapse by default on mobile screens on initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setIsCollapsed(window.innerWidth < 768);
+      const initialCollapse = window.innerWidth < 768;
+      setIsCollapsed(initialCollapse);
+      if (onExpand) onExpand(!initialCollapse);
     }
-  }, []);
+  }, [onExpand]);
+
+  // Sync state upward when it changes
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    if (onExpand) onExpand(!newState);
+  };
 
   useEffect(() => {
     async function getAlerts() {
@@ -75,10 +84,10 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded }) {
   const displayedAlerts = activeTab === 'active' ? alerts : historyAlerts;
 
   return (
-    <div className={`glass-panel transition-all duration-300 ease-in-out ${isCollapsed ? 'w-fit' : 'w-[calc(100vw-48px)] md:w-[320px]'} max-h-[40vh] md:max-h-[500px]`} style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
+    <div className={`glass-panel transition-all duration-300 ease-in-out ${isCollapsed ? 'w-fit' : 'w-[calc(100vw-48px)] md:w-[320px]'} max-h-[85vh] md:max-h-[500px]`} style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
       <div
         style={{ padding: isCollapsed ? '10px 16px' : '16px 20px', borderBottom: isCollapsed ? 'none' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', cursor: 'pointer' }}
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={toggleCollapse}
       >
         <h2 style={{ fontSize: isCollapsed ? '0.9rem' : '1rem', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <AlertTriangle size={isCollapsed ? 16 : 18} color="#ef4444" />

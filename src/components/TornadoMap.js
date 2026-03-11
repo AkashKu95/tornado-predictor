@@ -236,62 +236,68 @@ const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) 
         {/* Fly to custom location if one exists */}
         {centerLocation && <LocationMarker location={centerLocation} />}
 
-        {data && data.features && data.features.length > 0 ? (
-          <GeoJSON
-            key={`${day}-${data.features.length}`}
-            data={{
-              ...data,
-              features: [...data.features]
-                .filter(f => {
-                  let v = String(f.properties.LABEL || f.properties.label || f.properties.dn);
-                  return !(v === 'SIG' || v.includes('CIG') || v.includes('SIGN'));
-                })
-                .sort((a, b) => {
-                  // We want to sort features so lower probabilities render first (bottom), 
-                  // and higher probabilities render last (top) so they capture clicks.
-                  const getVal = (f) => {
-                    let v = f.properties.LABEL || f.properties.label || f.properties.dn;
-                    if (typeof v === 'string') {
-                      if (v.startsWith('0.')) return parseFloat(v) * 100;
-                      return parseInt(v) || 0;
-                    }
-                    return v || 0;
-                  };
-                  return getVal(a) - getVal(b);
-                })
-            }}
-            style={getStyle}
-            onEachFeature={onEachFeature}
-          />
-        ) : data && data.features && data.features.length === 0 && !centerLocation ? (
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-            background: 'rgba(15, 23, 42, 0.75)',
-            border: '1px solid rgba(52, 211, 153, 0.2)',
-            padding: '16px 32px',
-            borderRadius: '24px',
-            backdropFilter: 'blur(8px)',
-            color: '#34d399',
-            fontWeight: 600,
-            letterSpacing: '0.5px',
-            fontSize: '1.1rem',
-            pointerEvents: 'none',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-              <path d="m9 12 2 2 4-4"></path>
-            </svg>
-            No Severe Weather Areas Expected
-          </div>
-        ) : null}
+        {(() => {
+          if (!data || !data.features) return null;
+          
+          const visibleFeatures = data.features.filter(f => {
+            let v = String(f.properties.LABEL || f.properties.label || f.properties.dn);
+            return !(v === 'SIG' || v.includes('CIG') || v.includes('SIGN'));
+          });
+
+          if (visibleFeatures.length > 0) {
+            return (
+              <GeoJSON
+                key={`${day}-${visibleFeatures.length}`}
+                data={{
+                  ...data,
+                  features: visibleFeatures.sort((a, b) => {
+                    const getVal = (f) => {
+                      let v = f.properties.LABEL || f.properties.label || f.properties.dn;
+                      if (typeof v === 'string') {
+                        if (v.startsWith('0.')) return parseFloat(v) * 100;
+                        return parseInt(v) || 0;
+                      }
+                      return v || 0;
+                    };
+                    return getVal(a) - getVal(b);
+                  })
+                }}
+                style={getStyle}
+                onEachFeature={onEachFeature}
+              />
+            );
+          } else {
+            return (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1000,
+                background: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(52, 211, 153, 0.2)',
+                padding: '16px 32px',
+                borderRadius: '24px',
+                backdropFilter: 'blur(8px)',
+                color: '#34d399',
+                fontWeight: 600,
+                letterSpacing: '0.5px',
+                fontSize: '1.1rem',
+                pointerEvents: 'none',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                No severe weather expected, enjoy your day :)
+              </div>
+            );
+          }
+        })()}
 
         {/* Fly to active NWS Alert */}
         {selectedAlert && <AlertView alert={selectedAlert} />}
