@@ -70,12 +70,18 @@ function AlertView({ alert }) {
       const geoJsonLayer = L.geoJSON(alert);
       const bounds = geoJsonLayer.getBounds();
       if (bounds.isValid()) {
-        map.flyToBounds(bounds, { padding: [50, 50], duration: 1.5 });
+        // Show a wider view of the warning area instead of zooming in too tight.
+        map.flyToBounds(bounds, {
+          padding: [120, 120],
+          maxZoom: 7,
+          duration: 1.5,
+        });
       }
     }
   }, [alert, map]);
   return null;
 }
+
 
 const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) => {
   const [radarData, setRadarData] = useState(null);
@@ -228,7 +234,7 @@ const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) 
         </Pane>
 
         {/* Custom pane for Active NWS Alerts to ensure they render ON TOP of base NOAA polygons */}
-        <Pane name="alertsPane" style={{ zIndex: 390 }} />
+        <Pane name="alertsPane" style={{ zIndex: 460 }} />
 
         {/* Only auto-fly to storm polygons if we haven't manually searched a location */}
         {!centerLocation && data && <ChangeView geojsonData={data} />}
@@ -323,13 +329,35 @@ const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) 
               }}
               pane="alertsPane"
               onEachFeature={(feature, layer) => {
-                const popupContent = `
+                const basePopup = `
                   <div style="font-family: inherit; color: #333;">
                     <strong style="font-size: 1.1em; color: ${alertColor};">${alert.properties.event}</strong><br/>
                     <span style="font-size: 0.9em;">${alert.properties.areaDesc}</span>
                   </div>
                 `;
+
+                const popupContent = isWarning
+                  ? `
+                    <div style="font-family: inherit; color: #333;">
+                      <strong style="font-size: 1.1em; color: ${alertColor};">${alert.properties.event}</strong><br/>
+                      <span style="font-size: 0.9em; font-weight: 700; color: #b91c1c;">15% Tornado Probability</span><br/>
+                      <span style="font-size: 0.9em;">${alert.properties.areaDesc}</span>
+                    </div>
+                  `
+                  : basePopup;
+
                 layer.bindPopup(popupContent);
+
+                // Show "15% Tornado" tooltip on hover anywhere over the red warning polygon
+                if (isWarning) {
+                  layer.bindTooltip('15% Tornado', {
+                    permanent: false,
+                    sticky: true,
+                    direction: 'top',
+                    offset: [0, -8],
+                    className: 'tornado-prob-tooltip',
+                  });
+                }
               }}
             />
           );

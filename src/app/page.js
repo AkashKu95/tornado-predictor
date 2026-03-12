@@ -71,24 +71,8 @@ export default function Home() {
     loadForecast();
   }, [centerLocation]);
 
-  // Request the user's location on initial load so the banner shows by default
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCenterLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-            name: "My Location",
-            zoom: 8
-          });
-        },
-        (error) => {
-          console.log("Geolocation permission denied or failed on load, skipping default location.", error);
-        }
-      );
-    }
-  }, []);
+  // Do NOT auto-focus on the user's location on initial load.
+  // This allows the map to automatically center on active Tornado Warnings instead.
 
   useEffect(() => {
     async function loadWeather() {
