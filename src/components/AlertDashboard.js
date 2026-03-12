@@ -16,9 +16,13 @@ export default function AlertDashboard({ onAlertSelect, onAlertsLoaded, onExpand
   // Collapse by default on mobile screens on initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const initialCollapse = window.innerWidth < 768;
-      setIsCollapsed(initialCollapse);
-      if (onExpand) onExpand(!initialCollapse);
+      try {
+        const initialCollapse = window.innerWidth < 768;
+        setIsCollapsed(initialCollapse);
+        if (onExpand) onExpand(!initialCollapse);
+      } catch (e) {
+        console.warn('Unable to read window size for AlertDashboard', e);
+      }
     }
   }, [onExpand]);
 

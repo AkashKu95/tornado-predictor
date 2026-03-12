@@ -86,36 +86,66 @@ function AlertView({ alert }) {
 const TornadoMap = ({ data, day, centerLocation, selectedAlert, activeAlerts }) => {
   const [radarData, setRadarData] = useState(null);
   const [frameIndex, setFrameIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Fetch rainviewer data and animate when an alert is selected
+  // Detect mobile devices (best-effort) to soften heavy features.
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent || '';
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      setIsMobile(mobile);
+    }
+  }, []);
+
+  // Fetch rainviewer data and animate when an alert is selected.
+  // On mobile, keep this lighter by trimming frames and skipping animation if needed.
   useEffect(() => {
     if (!selectedAlert) {
       setRadarData(null);
       return;
     }
 
+    let isCancelled = false;
+
     fetch('https://api.rainviewer.com/public/weather-maps.json')
       .then(res => res.json())
       .then(data => {
+        if (isCancelled || !data || !data.radar || !Array.isArray(data.radar.past)) return;
+
+        let frames = data.radar.past;
+        // On mobile, keep only the last few frames to reduce memory/CPU pressure.
+        if (isMobile && frames.length > 6) {
+          frames = frames.slice(-6);
+        }
+
         setRadarData({
           host: data.host,
-          frames: data.radar.past
+          frames
         });
       })
       .catch(err => console.error("Radar load failed", err));
-  }, [selectedAlert]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedAlert, isMobile]);
 
   // Handle Animation Loop
   useEffect(() => {
-    if (!radarData || radarData.frames.length === 0) return;
+    if (!radarData || !radarData.frames || radarData.frames.length === 0) return;
 
-    // Smooth 650ms animation interval
+    // On very constrained mobile devices, skip animation and just show the latest frame.
+    if (isMobile) {
+      setFrameIndex(radarData.frames.length - 1);
+      return;
+    }
+
     const interval = setInterval(() => {
       setFrameIndex(prev => (prev + 1) % radarData.frames.length);
     }, 650);
 
     return () => clearInterval(interval);
-  }, [radarData]);
+  }, [radarData, isMobile]);
 
   // Return style based on SPC probability labels
   const getStyle = (feature) => {

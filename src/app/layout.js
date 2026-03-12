@@ -47,18 +47,37 @@ export default function RootLayout({ children }) {
                   }
                 }
 
-                // Always clear client-side state on each full page load
-                // so the app starts from a clean slate.
-                clearAllClientState();
+                // Best-effort mobile crash prevention:
+                // - Clear heavy client-side state on each full page load
+                // - Unregister stale service workers
+                // - Catch and log fatal errors instead of letting the app hard-crash.
+
+                try {
+                  clearAllClientState();
+                } catch (e) {
+                  console.warn('Client state clear failed', e);
+                }
 
                 // Aggressively unregister any existing service workers for this origin
-                if ('serviceWorker' in navigator) {
-                  navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                    registrations.forEach(function (registration) {
-                      registration.unregister();
+                try {
+                  if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                      registrations.forEach(function (registration) {
+                        registration.unregister();
+                      });
                     });
-                  });
+                  }
+                } catch (e) {
+                  console.warn('Service worker cleanup failed', e);
                 }
+
+                // Global safety net: prevent uncaught errors from killing the UI, especially on low-memory phones.
+                window.addEventListener('error', function (event) {
+                  console.error('Global error handler:', event.error || event.message);
+                });
+                window.addEventListener('unhandledrejection', function (event) {
+                  console.error('Unhandled promise rejection:', event.reason);
+                });
               })();
             `,
           }}

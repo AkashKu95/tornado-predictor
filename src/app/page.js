@@ -43,7 +43,11 @@ export default function Home() {
   // Collapse discussion by default on mobile
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setIsDiscussionCollapsed(window.innerWidth < 768);
+      try {
+        setIsDiscussionCollapsed(window.innerWidth < 768);
+      } catch (e) {
+        console.warn('Unable to read window size', e);
+      }
     }
   }, []);
 

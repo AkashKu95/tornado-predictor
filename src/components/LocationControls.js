@@ -7,7 +7,7 @@ export default function LocationControls({ onLocationSelect }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const handleGeolocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       alert("Geolocation is not supported by your browser");
       return;
     }
