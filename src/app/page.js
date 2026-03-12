@@ -264,9 +264,9 @@ export default function Home() {
       {/* Background Map layer */}
       {mapComponent}
 
-      {/* Overlay UI - Top Weather Banner */}
+      {/* Overlay UI - Weather Banner */}
       {centerLocation && (
-        <div className="overlay-ui absolute bottom-[130px] md:bottom-auto md:top-6 left-1/2 -translate-x-1/2 z-[600] w-[95vw] md:w-auto opacity-95 md:opacity-100">
+        <div className="overlay-ui absolute md:top-6 md:left-1/2 md:-translate-x-1/2 bottom-[96px] left-3 translate-x-0 z-[600] w-[90vw] md:w-auto opacity-95 md:opacity-100">
           <div className="glass-panel" style={{
             display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between',
             padding: '2px 6px', gap: '4px', width: '100%',
@@ -515,63 +515,63 @@ export default function Home() {
           })}
         </div>
 
-        {/* Mobile Stack: Risk Legend (Tornado Risk scale) + Weather Banner + Day Banner */}
-        <div className="flex flex-col gap-2 w-full md:hidden">
-          {/* Tornado Risk scale: always just above the weather banner (if present), otherwise above the day banner */}
-          {!alertsExpanded && (
-            <div className="w-full flex justify-center pointer-events-auto">
-              {renderMapLegend()}
-            </div>
-          )}
-
-          {/* Mobile Day Banner */}
-          <div className="flex gap-2 items-center justify-center p-0">
-            <div className="px-2 text-[0.7rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
-              Forecast
-            </div>
-            {[1, 2, 3].map(day => {
-              let dateString = '';
-              if (isClient) {
-                const forecastDate = new Date();
-                forecastDate.setDate(forecastDate.getDate() + (day - 1));
-                dateString = forecastDate.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric'
-                });
-              }
-
-              return (
-                <button
-                  key={day}
-                  onClick={() => setSelectedDay(day)}
-                  className={`btn ${day === selectedDay ? 'active' : ''}`}
-                  style={{ 
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                    padding: '6px 16px', minWidth: '80px', minHeight: '48px', justifyContent: 'center',
-                    background: day === selectedDay ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.65)',
-                    border: day === selectedDay ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '24px', backdropFilter: 'blur(8px)',
-                    boxShadow: day === selectedDay ? '0 0 15px rgba(56, 189, 248, 0.3)' : '0 4px 12px rgba(0,0,0,0.5)'
-                  }}
-                >
-                  <span className="text-[1.0rem]" style={{ fontWeight: 600, lineHeight: 1.2, color: day === selectedDay ? '#fff' : '#cbd5e1' }}>
-                    {day === 1 ? 'Today' : `Day ${day}`}
-                  </span>
-                  <span className="text-[0.65rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {dateString}
-                  </span>
-                </button>
-              );
-            })}
+        {/* Mobile Day Banner */}
+        <div className="flex md:hidden gap-2 items-center justify-center p-0 mt-2">
+          <div className="px-2 text-[0.7rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
+            Forecast
           </div>
+          {[1, 2, 3].map(day => {
+            let dateString = '';
+            if (isClient) {
+              const forecastDate = new Date();
+              forecastDate.setDate(forecastDate.getDate() + (day - 1));
+              dateString = forecastDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+
+            return (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`btn ${day === selectedDay ? 'active' : ''}`}
+                style={{ 
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                  padding: '6px 16px', minWidth: '80px', minHeight: '48px', justifyContent: 'center',
+                  background: day === selectedDay ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.65)',
+                  border: day === selectedDay ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '24px', backdropFilter: 'blur(8px)',
+                  boxShadow: day === selectedDay ? '0 0 15px rgba(56, 189, 248, 0.3)' : '0 4px 12px rgba(0,0,0,0.5)'
+                }}
+              >
+                <span className="text-[1.0rem]" style={{ fontWeight: 600, lineHeight: 1.2, color: day === selectedDay ? '#fff' : '#cbd5e1' }}>
+                  {day === 1 ? 'Today' : `Day ${day}`}
+                </span>
+                <span className="text-[0.65rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  {dateString}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Dynamic Map Legend - Desktop Only (Mobile is rendered inside the left columns) */}
+      {/* Dynamic Map Legend - Desktop Only */}
       <div className="hidden md:block absolute bottom-10 right-[390px] z-[500] pointer-events-auto transition-all duration-300">
         {renderMapLegend()}
       </div>
+
+      {/* Mobile Tornado Risk scale pinned to left side near bottom */}
+      {!alertsExpanded && (
+        <div
+          className="md:hidden absolute left-3 z-[550] pointer-events-auto"
+          style={{ bottom: centerLocation ? '160px' : '96px' }}
+        >
+          {renderMapLegend()}
+        </div>
+      )}
     </main>
   );
 }
