@@ -32,24 +32,6 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: `
               (function () {
-                const APP_VERSION = '1.0.0';
-                const VERSION_KEY = 'tp_app_version';
-                const CRASH_FLAG_KEY = 'tp_app_crashed';
-
-                function approximateLocalStorageSize() {
-                  try {
-                    let total = 0;
-                    for (let i = 0; i < localStorage.length; i++) {
-                      const key = localStorage.key(i);
-                      const value = localStorage.getItem(key);
-                      total += (key ? key.length : 0) + (value ? value.length : 0);
-                    }
-                    return total;
-                  } catch (e) {
-                    return 0;
-                  }
-                }
-
                 function clearAllClientState() {
                   try { localStorage.clear(); } catch (e) {}
                   try { sessionStorage.clear(); } catch (e) {}
@@ -65,56 +47,19 @@ export default function RootLayout({ children }) {
                   }
                 }
 
-                var storedVersion = null;
-                try {
-                  storedVersion = localStorage.getItem(VERSION_KEY);
-                } catch (e) {}
+                // Always clear client-side state on each full page load
+                // so the app starts from a clean slate.
+                clearAllClientState();
 
-                var hadCrash = false;
-                try {
-                  hadCrash = localStorage.getItem(CRASH_FLAG_KEY) === '1';
-                } catch (e) {}
-
-                var lsSize = approximateLocalStorageSize();
-                var isHeavySession = lsSize > 200 * 1024; // ~200KB of localStorage text
-
-                var shouldNuke =
-                  !storedVersion ||
-                  storedVersion !== APP_VERSION ||
-                  hadCrash ||
-                  isHeavySession;
-
-                if (shouldNuke) {
-                  clearAllClientState();
-                  try {
-                    localStorage.setItem(VERSION_KEY, APP_VERSION);
-                    localStorage.removeItem(CRASH_FLAG_KEY);
-                  } catch (e) {}
-                  window.location.reload();
+                // Aggressively unregister any existing service workers for this origin
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                    registrations.forEach(function (registration) {
+                      registration.unregister();
+                    });
+                  });
                 }
-
-                window.addEventListener('error', function () {
-                  try { localStorage.setItem(CRASH_FLAG_KEY, '1'); } catch (e) {}
-                });
               })();
-            `,
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    },
-                    function(err) {
-                      console.log('ServiceWorker registration failed: ', err);
-                    }
-                  );
-                });
-              }
             `,
           }}
         />
