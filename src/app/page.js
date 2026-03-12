@@ -382,11 +382,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Mobile Risk Legend positioned directly under the forecast tab */}
-            <div className={`${alertsExpanded ? 'hidden' : 'flex'} md:hidden z-[500] pointer-events-auto w-[calc(100vw-48px)]`}>
-              {renderMapLegend()}
-            </div>
-
           </div>
         </div>
 
@@ -478,18 +473,16 @@ export default function Home() {
 
       {/* Overlay UI - Timeline Scrubber */}
       <div className={`overlay-ui absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 w-[95vw] md:w-auto transition-opacity duration-300 ${alertsExpanded ? 'opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'opacity-100 pointer-events-auto'}`}>
-        <div className="md:glass-panel flex gap-2 md:gap-2 items-center justify-center p-0 md:p-2">
-          <div className="px-2 md:px-4 text-[0.7rem] md:text-[0.9rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
+        {/* Desktop Day Banner */}
+        <div className="hidden md:flex md:glass-panel gap-2 items-center justify-center p-2">
+          <div className="px-4 text-[0.9rem] text-[#94a3b8] font-semibold uppercase tracking-wider">
             Forecast
           </div>
           {[1, 2, 3].map(day => {
             let dateString = '';
             if (isClient) {
-              // Calculate the actual date for the forecast day (Day 1 is today)
               const forecastDate = new Date();
               forecastDate.setDate(forecastDate.getDate() + (day - 1));
-
-              // Format to "Mon, Mar 10"
               dateString = forecastDate.toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
@@ -511,15 +504,67 @@ export default function Home() {
                   boxShadow: day === selectedDay ? '0 0 15px rgba(56, 189, 248, 0.3)' : '0 4px 12px rgba(0,0,0,0.5)'
                 }}
               >
-                <span className="text-[1.0rem] md:text-[1.1rem]" style={{ fontWeight: 600, lineHeight: 1.2, color: day === selectedDay ? '#fff' : '#cbd5e1' }}>
+                <span className="text-[1.1rem]" style={{ fontWeight: 600, lineHeight: 1.2, color: day === selectedDay ? '#fff' : '#cbd5e1' }}>
                   {day === 1 ? 'Today' : `Day ${day}`}
                 </span>
-                <span className="text-[0.65rem] md:text-[0.75rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span className="text-[0.75rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   {dateString}
                 </span>
               </button>
             );
           })}
+        </div>
+
+        {/* Mobile Stack: Risk Legend (Tornado Risk scale) + Weather Banner + Day Banner */}
+        <div className="flex flex-col gap-2 w-full md:hidden">
+          {/* Tornado Risk scale: always just above the weather banner (if present), otherwise above the day banner */}
+          {!alertsExpanded && (
+            <div className="w-full flex justify-center pointer-events-auto">
+              {renderMapLegend()}
+            </div>
+          )}
+
+          {/* Mobile Day Banner */}
+          <div className="flex gap-2 items-center justify-center p-0">
+            <div className="px-2 text-[0.7rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
+              Forecast
+            </div>
+            {[1, 2, 3].map(day => {
+              let dateString = '';
+              if (isClient) {
+                const forecastDate = new Date();
+                forecastDate.setDate(forecastDate.getDate() + (day - 1));
+                dateString = forecastDate.toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
+                });
+              }
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`btn ${day === selectedDay ? 'active' : ''}`}
+                  style={{ 
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                    padding: '6px 16px', minWidth: '80px', minHeight: '48px', justifyContent: 'center',
+                    background: day === selectedDay ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.65)',
+                    border: day === selectedDay ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '24px', backdropFilter: 'blur(8px)',
+                    boxShadow: day === selectedDay ? '0 0 15px rgba(56, 189, 248, 0.3)' : '0 4px 12px rgba(0,0,0,0.5)'
+                  }}
+                >
+                  <span className="text-[1.0rem]" style={{ fontWeight: 600, lineHeight: 1.2, color: day === selectedDay ? '#fff' : '#cbd5e1' }}>
+                    {day === 1 ? 'Today' : `Day ${day}`}
+                  </span>
+                  <span className="text-[0.65rem]" style={{ opacity: 0.8, marginTop: '1px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {dateString}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
