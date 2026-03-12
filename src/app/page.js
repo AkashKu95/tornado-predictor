@@ -405,7 +405,26 @@ export default function Home() {
         {/* Reset Button and Loading Indicator */}
         <div className="absolute top-0 right-0 md:static flex flex-col gap-2 md:gap-4 items-end z-[900]" style={{ pointerEvents: 'none' }}>
           <button
-            onClick={() => window.location.reload()}
+            onClick={async () => {
+              try {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.controller.postMessage('HARD_RESET');
+                }
+              } catch (e) {
+                console.error('Failed to send HARD_RESET to service worker', e);
+              }
+
+              try {
+                await fetch('/api/reset', {
+                  method: 'GET',
+                  cache: 'no-store',
+                });
+              } catch (e) {
+                console.error('Failed to call /api/reset for Clear-Site-Data', e);
+              }
+
+              window.location.href = '/';
+            }}
             className="btn glass-panel"
             style={{
               display: 'flex',
