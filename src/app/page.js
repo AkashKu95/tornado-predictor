@@ -264,9 +264,9 @@ export default function Home() {
       {/* Background Map layer */}
       {mapComponent}
 
-      {/* Overlay UI - Weather Banner */}
+      {/* Overlay UI - Weather Banner (desktop only; mobile version is in bottom stack below) */}
       {centerLocation && (
-        <div className="overlay-ui absolute md:top-6 md:left-1/2 md:-translate-x-1/2 bottom-[96px] left-3 translate-x-0 z-[600] w-[90vw] md:w-auto opacity-95 md:opacity-100">
+        <div className="overlay-ui absolute md:top-6 md:left-1/2 md:-translate-x-1/2 hidden md:block z-[600] w-[90vw] md:w-auto opacity-95 md:opacity-100">
           <div className="glass-panel" style={{
             display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between',
             padding: '2px 6px', gap: '4px', width: '100%',
@@ -515,8 +515,84 @@ export default function Home() {
           })}
         </div>
 
-        {/* Mobile Day Banner */}
-        <div className="flex md:hidden gap-2 items-center justify-center p-0 mt-2">
+      </div>
+
+      {/* Mobile only: bottom stack - Tornado Risk (top/left), Weather banner (middle), Forecast days (bottom) */}
+      <div className="md:hidden absolute bottom-4 left-3 right-3 z-[600] flex flex-col gap-2 pointer-events-auto items-start">
+        {/* Tornado Risk scale - bottom left, above weather/forecast */}
+        {!alertsExpanded && (
+          <div className="w-fit">
+            {renderMapLegend()}
+          </div>
+        )}
+        {/* Weather banner - just above forecast days */}
+        {centerLocation && (
+          <div className="w-full max-w-[94vw]">
+            <div className="glass-panel" style={{
+              display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'space-between',
+              padding: '2px 6px', gap: '4px', width: '100%',
+              background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(52, 211, 153, 0.3)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)', backdropFilter: 'blur(12px)', borderRadius: '16px',
+              overflow: 'hidden'
+            }}>
+              {isWeatherLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', gap: '8px', color: '#94a3b8' }}>
+                  <RefreshCw size={12} className="animate-spin" />
+                  <span style={{ fontSize: '11px', fontWeight: 500 }}>Fetching weather...</span>
+                </div>
+              ) : currentWeather ? (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minWidth: 0, flex: 1, gap: '6px' }}>
+                    <span style={{ fontSize: '10px', textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.5px', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      {centerLocation.name}
+                    </span>
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {currentWeather.shortForecast}
+                    </span>
+                  </div>
+                  <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#34d399', lineHeight: 1 }}>
+                      {currentWeather.temperature}&deg;
+                    </div>
+                    <div className="hidden sm:flex" style={{ flexDirection: 'column', color: '#cbd5e1', fontSize: '10px' }}>
+                      <span>Wind: {currentWeather.windSpeed}</span>
+                      <span>RH: {currentWeather.relativeHumidity?.value ? Math.round(currentWeather.relativeHumidity.value) + '%' : 'N/A'}</span>
+                    </div>
+                  </div>
+                  {localTornadoRisk && (
+                    <>
+                      <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        <div style={{
+                          width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
+                          background: localTornadoRisk.label === 'None Expected' ? 'rgba(52, 211, 153, 0.1)' : 'rgba(239, 68, 68, 0.2)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                          <Tornado size={10} color={localTornadoRisk.label === 'None Expected' ? '#34d399' : '#ef4444'} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: 'white', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                            {localTornadoRisk.label}
+                          </span>
+                          <span style={{ fontSize: '8px', textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.5px', lineHeight: 1.1, whiteSpace: 'nowrap' }}>
+                            {localTornadoRisk.type} Risk
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 500 }}>Unavailable</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Forecast days banner - at the bottom of the stack */}
+        <div className="flex gap-2 items-center justify-center p-0 w-full">
           <div className="px-2 text-[0.7rem] text-[#94a3b8] font-semibold uppercase tracking-wider hidden sm:block">
             Forecast
           </div>
@@ -531,14 +607,13 @@ export default function Home() {
                 day: 'numeric'
               });
             }
-
             return (
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
                 className={`btn ${day === selectedDay ? 'active' : ''}`}
-                style={{ 
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
                   padding: '6px 16px', minWidth: '80px', minHeight: '48px', justifyContent: 'center',
                   background: day === selectedDay ? 'rgba(56, 189, 248, 0.2)' : 'rgba(15, 23, 42, 0.65)',
                   border: day === selectedDay ? '1px solid rgba(56, 189, 248, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
@@ -562,16 +637,6 @@ export default function Home() {
       <div className="hidden md:block absolute bottom-10 right-[390px] z-[500] pointer-events-auto transition-all duration-300">
         {renderMapLegend()}
       </div>
-
-      {/* Mobile Tornado Risk scale pinned to left side near bottom */}
-      {!alertsExpanded && (
-        <div
-          className="md:hidden absolute left-3 z-[550] pointer-events-auto"
-          style={{ bottom: centerLocation ? '160px' : '96px' }}
-        >
-          {renderMapLegend()}
-        </div>
-      )}
     </main>
   );
 }
